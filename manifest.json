@@ -1,0 +1,22 @@
+﻿{
+    "Name": "MarvalSoftware.Plugins.RequestListSetRowClassAdvanced",
+    "Organisation": "Marval Australia",
+    "DisplayName": "RequestList Set Row Class Advanced",
+    "Icon": "request_list_style_16.png",
+    "Version": "0.5",
+    "SupportedVersions": [
+   "0.0.0"
+    ],
+    "Pages": [
+        "RequestList.aspx",
+        "RequestSearch.aspx"
+    ],
+    "HtmlImportFile": "requestlist_set_row_class.html",
+    "TagName": "marval-software-plugins-requestlist-set-row-class",
+    "GlobalSettings": [
+		"RequestAttributeID",
+        "RequestAttributeValue",
+        "cssClassName",
+        "DBConnectionString"
+	]
+}

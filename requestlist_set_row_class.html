@@ -1,0 +1,142 @@
+<script type="text/javascript" src="template.js"></script>
+<script>
+	(function () {
+		var _pluginId = "marval-software-plugins-requestlist-set-row-class";
+		var $ = window.top.$;
+		var MarvalSoftware = window.top.MarvalSoftware;
+		MarvalSoftware.Plugins.define(_pluginId,
+			{
+				_pluginHandlerRequest: null,
+				_pluginRules: null,
+				_table: null,
+				_getPluginPath: null,
+				_getCSSAttribute: null,
+				_header: null,
+				_list: null,
+
+				init: function () {
+					
+					this._table = MarvalSoftware.UI.Controls.ScriptManager.getInstance().getControl("__Page")._grid; if (!this._table) { this._logConsole('Plugin Error! Requests grid control could not be found.'); return; }
+					this._header = this._table._headerElement; if (!this._header) { this._logConsole('Plugin Error! Requests grid header element could not be found.'); return; }
+					this._list = this._table._bodyElement; if (!this._list) { this._logConsole('Plugin Error! Requests grid body element could not be found.'); return; }
+					
+					this._CSSAttribute = this._getCSSAttribute();
+					this._getPluginConfig(
+						this,
+						this._pluginInitialActions
+					);
+				},
+				_getPluginPath: function () {
+					return this.attributes["data-pluginpath"].value;
+				},
+				_getCSSAttribute: function () {
+					var that = this;
+					var myFunction = function(){
+					var pluginPath = that._getPluginPath();
+					var returnValue = null;
+					$.ajax({
+						type: "GET",
+						url: pluginPath + "APIHandler.ashx?settingToRetrieve=CSSAttribute",
+						contentType: "application/json; charset=utf-8",
+						dataType: "text",
+						success: function (response) {
+				
+							returnValue = response;
+						},
+						error: function (XMLHttpRequest, textStatus, errorThrown) {
+							console.log("Status: " + textStatus); console.log("Error: " + errorThrown);
+						}
+					})
+					return returnValue;
+				}
+					var result = myFunction();
+					return result;
+			
+				},
+				_getPluginConfig: function (plugin, callback) {
+					var pluginPath = this._getPluginPath();
+					plugin._pluginRulesProcessing();
+					plugin._pluginAddListener();
+	
+				},
+				_pluginInitialActions: function (plugin, pluginConfig) {
+					try {
+						plugin._pluginRules = JSON.parse(pluginConfig);
+						if (plugin._pluginRules.constructor !== Array) plugin._pluginRules = [plugin._pluginRules];
+					} catch (e) {
+						plugin._logConsole('Plugin Error! Plugin configuration string could not be parsed as JSON object.');
+						return;
+					}
+					plugin._pluginRulesProcessing();
+					plugin._table.onRenderedDataSource.subscribe(plugin._gridRefreshedExtraFunction, plugin);
+				},
+				_gridRefreshedExtraFunction: function (sender, e) {
+					this._pluginRulesProcessing();
+				},
+				_pluginAddListener: function () {
+					var that = this;
+					document.addEventListener('DOMContentLoaded', function () {
+		
+					$('#ctl00_ctl00_cph_grid_body').on('DOMSubtreeModified', function(){
+            
+					  setTimeout(function(){
+						that._pluginRulesProcessing();
+                        }, 3000);
+                    });
+					let refreshButton = window.top.document.getElementById('ctl00_ctl00_cph_grid_refreshButton');
+			
+					refreshButton.addEventListener('click', (event)=> {
+			
+					   setTimeout(function(){
+						that._pluginRulesProcessing();
+                        }, 3000);
+					})
+				})
+				},
+				_pluginRulesProcessing: function () {
+					// console.log("css Attribute 1 is ", this._CSSAttribute);
+					var pluginPath = this._getPluginPath();
+					var j = 0;
+					var cidx = -1;
+					$('#' + this._header.id + ' > .row > .cell').each(function () {
+						var hdrcell = $(this).find(".cell-header");
+						j++;
+					});
+					$('#' + this._list.id + ' a').each(function () {
+						var href = $(this).attr('href');
+						var splitResult = href.split('=');
+						var requestID = splitResult[1];
+                        var that = this;
+						$.ajax({
+							type: "GET",
+							url: pluginPath + "APIHandler.ashx?requestID=" + requestID,
+							contentType: "application/json; charset=utf-8",
+							dataType: "json",
+							success: function (result1) {
+								var fullLocString = "";
+								result1.RequestParams.forEach(element => {
+									console.log("Checking %s against %s for ID %s and %s and %s",result1.ConfigParams[0].RequestAttributeValue,element.booleanValue,requestID,result1.ConfigParams[0].RequestAttrID,element.requestAttributeTypeId)
+									if (result1.ConfigParams[0].RequestAttrID == element.requestAttributeTypeId && result1.ConfigParams[0].RequestAttributeValue == element.textValue) {
+										console.log("Found a match1");
+										$(that).addClass("row-class-priority1");
+									} else if (result1.ConfigParams[0].RequestAttrID == element.requestAttributeTypeId && result1.ConfigParams[0].RequestAttributeValue == element.booleanValue) {
+										console.log("Found a match2");
+										$(that).addClass("row-class-priority1");
+									} else if (result1.ConfigParams[0].RequestAttrID == element.requestAttributeTypeId && result1.ConfigParams[0].RequestAttributeValue == element.numberValue) {
+										console.log("Found a match3");
+										$(that).addClass("row-class-priority1");
+									}
+								});
+							},
+							error: function (XMLHttpRequest, textStatus, errorThrown) {
+								console.log("Status: " + textStatus); console.log("Error: " + errorThrown);
+							}
+						});
+					})
+				},
+				_logConsole: function (s) {
+					console.log(s);
+				}
+			});
+	})();
+</script>

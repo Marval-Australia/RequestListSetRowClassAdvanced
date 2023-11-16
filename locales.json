@@ -1,0 +1,13 @@
+{
+	"defaultLocale": "en-GB",
+	"resources": 
+		[{
+			"en-GB": {
+				"RequestAttributeID": "Request Attribute Identifier",
+                "RequestAttributeValue": "Request Attribute Value",
+                "cssClassName": "CSS Class Name",
+                "DBConnectionString": "Database Connection String"
+
+			}
+		}]	
+}
